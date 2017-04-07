@@ -31,16 +31,22 @@ class MinMaxStack < MyStack
   end
 
   def add(el)
-    if @store.empty?
-      @store.push( { key: [el, el] } )
+    if el.is_a?(Hash)
+      @store.push(el)
       return
     end
 
-    last = @store.last[:key]
+    if @store.empty?
+      # update if key already exists
+      @store.push( { el => [el, el] } )
+      return
+    end
+
+    last = @store.last[el]
     if last[0] < el
-      @store.push( { key: [el, last[1]] } )
+      @store.push( { el => [el, last[1]] } )
     elsif last[1] > el
-      @store.push( { key: [last[0], el] } )
+      @store.push( { el => [last[0], el] } )
     else
       @store.push(@store.last)
     end
@@ -57,7 +63,6 @@ class MinMaxStack < MyStack
   def min
     @store.last[:key][1]
   end
-
 end
 
 
@@ -82,7 +87,7 @@ class StackQueue
   def dequeue
     if @queue.empty?
       until @stack.empty?
-        @queue.add(@stack.remove)
+        @queue.add(@stack.remove.key)
       end
     end
 
@@ -91,6 +96,49 @@ class StackQueue
 
   def empty?
     @stack.empty? && @queue.empty?
+  end
+
+end
+
+class MinMaxStackQueue < MinMaxStack
+  attr_reader :stack, :queue
+
+  def initialize
+    @stack = MinMaxStack.new
+    @queue = MyStack.new
+  end
+
+  def enqueue(el)
+    @stack.add(el)
+  end
+
+  def dequeue
+    until @stack.empty?
+      @queue.add(@stack.remove)
+    end
+    @queue.remove
+
+    until @queue.empty?
+      @stack.add(@queue.remove)
+    end
+
+    p "Shuffled correctly!"
+  end
+
+  def empty?
+    @stack.empty? && @queue.empty?
+  end
+
+  def max
+    @stack.max
+  end
+
+  def min
+    @stack.min
+  end
+
+  def peek
+    @stack.store.last
   end
 
 end
